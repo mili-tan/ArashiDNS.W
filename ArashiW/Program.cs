@@ -13,8 +13,8 @@ namespace ArashiW
             var server = new WebSocketServer("ws://0.0.0.0:3030");
             server.Start(ws =>
             {
-                ws.OnOpen = () => Console.WriteLine(ws.ConnectionInfo.ClientIpAddress + "Open!");
-                ws.OnClose = () => Console.WriteLine(ws.ConnectionInfo.ClientIpAddress + "Close!");
+                ws.OnOpen = () => Console.WriteLine(ws.ConnectionInfo.ClientIpAddress + " Open!");
+                ws.OnClose = () => Console.WriteLine(ws.ConnectionInfo.ClientIpAddress + " Close!");
                 ws.OnBinary = msg =>
                 {
                     var dnsQMsg = DnsMessage.Parse(msg);
