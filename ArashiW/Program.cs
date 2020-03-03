@@ -9,6 +9,7 @@ namespace ArashiW
     {
         static void Main(string[] args)
         {
+            DNSEncoder.Init();
             var server = new WebSocketServer("ws://0.0.0.0:3030");
             server.Start(ws =>
             {

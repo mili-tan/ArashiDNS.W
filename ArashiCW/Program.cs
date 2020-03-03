@@ -23,6 +23,9 @@ namespace ArashiCW
                 CancellationToken.None).Wait();
             var dnsBytes = new byte[500];
             ws.ReceiveAsync(new ArraySegment<byte>(dnsBytes), CancellationToken.None).Wait();
+            var dnsMsg = DnsMessage.Parse(dnsBytes);
+            dnsMsg.AnswerRecords.ForEach(Console.WriteLine);
+            dnsMsg.AuthorityRecords.ForEach(Console.WriteLine);
             Console.WriteLine("Done!");
             Console.ReadLine();
         }
