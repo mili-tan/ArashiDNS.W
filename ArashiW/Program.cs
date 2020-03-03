@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Net.WebSockets;
 using ARSoft.Tools.Net.Dns;
 using Fleck;
 
@@ -13,8 +12,8 @@ namespace ArashiW
             var server = new WebSocketServer("ws://0.0.0.0:3030");
             server.Start(ws =>
             {
-                ws.OnOpen = () => Console.WriteLine(ws.ConnectionInfo.ClientIpAddress + " Open!");
-                ws.OnClose = () => Console.WriteLine(ws.ConnectionInfo.ClientIpAddress + " Close!");
+                ws.OnOpen = () => Console.WriteLine(ws.ConnectionInfo.ClientIpAddress + ":Open!");
+                ws.OnClose = () => Console.WriteLine(ws.ConnectionInfo.ClientIpAddress + ":Close!");
                 ws.OnBinary = msg =>
                 {
                     var dnsQMsg = DnsMessage.Parse(msg);
@@ -27,6 +26,7 @@ namespace ArashiW
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
                     dnsMsg.AuthorityRecords.ForEach(o => Console.WriteLine("Au:" + o));
                     Console.ForegroundColor = ConsoleColor.Green;
+                    ws.Send(DNSEncoder.Encode(dnsMsg));
                 };
             });
 

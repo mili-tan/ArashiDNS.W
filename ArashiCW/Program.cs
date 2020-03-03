@@ -21,6 +21,8 @@ namespace ArashiCW
             ws.ConnectAsync(new Uri("ws://127.0.0.1:3030"), CancellationToken.None).Wait();
             ws.SendAsync(new ArraySegment<byte>(DNSEncoder.Encode(msg)), WebSocketMessageType.Binary, true,
                 CancellationToken.None).Wait();
+            var dnsBytes = new byte[500];
+            ws.ReceiveAsync(new ArraySegment<byte>(dnsBytes), CancellationToken.None).Wait();
             Console.WriteLine("Done!");
             Console.ReadLine();
         }
