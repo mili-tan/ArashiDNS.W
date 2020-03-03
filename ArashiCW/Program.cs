@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -14,20 +16,49 @@ namespace ArashiCW
     {
         static void Main(string[] args)
         {
-            var ws = new ClientWebSocket();
-            var msg = new DnsMessage();
-            msg.Questions.Add(new DnsQuestion(DomainName.Parse("baidu.com"), RecordType.A, RecordClass.INet));
-            DNSEncoder.Init();
-            ws.ConnectAsync(new Uri("ws://127.0.0.1:3030"), CancellationToken.None).Wait();
-            ws.SendAsync(new ArraySegment<byte>(DNSEncoder.Encode(msg)), WebSocketMessageType.Binary, true,
-                CancellationToken.None).Wait();
-            var dnsBytes = new byte[500];
-            ws.ReceiveAsync(new ArraySegment<byte>(dnsBytes), CancellationToken.None).Wait();
-            var dnsMsg = DnsMessage.Parse(dnsBytes);
-            dnsMsg.AnswerRecords.ForEach(Console.WriteLine);
-            dnsMsg.AuthorityRecords.ForEach(Console.WriteLine);
-            Console.WriteLine("Done!");
-            Console.ReadLine();
+            using (DnsServer dnsServer = new DnsServer(IPAddress.Any, 10, 10))
+            {
+                DNSEncoder.Init();
+                var ws = new ClientWebSocket();
+                ws.ConnectAsync(new Uri("ws://127.0.0.1:3030"), CancellationToken.None).Wait();
+
+                async Task OnDnsServerOnQueryReceived(object sender, QueryReceivedEventArgs e)
+                {
+                    if (!(e.Query is DnsMessage query)) return;
+                    await Task.Run(() =>
+                    {
+                        ws.SendAsync(new ArraySegment<byte>(DNSEncoder.Encode(query)), WebSocketMessageType.Binary,
+                            true, CancellationToken.None).Wait();
+                        var dnsBytes = new byte[500];
+                        ws.ReceiveAsync(new ArraySegment<byte>(dnsBytes), CancellationToken.None).Wait();
+                        var dnsRMsg = DnsMessage.Parse(dnsBytes);
+                        e.Response = dnsRMsg;
+                        using (var bgw = new BackgroundWorker())
+                        {
+                            bgw.DoWork += (o, eventArgs) =>
+                            {
+                                dnsRMsg.AnswerRecords.ForEach(Console.WriteLine);
+                                dnsRMsg.AuthorityRecords.ForEach(Console.WriteLine);
+                            };
+                            bgw.RunWorkerAsync();
+                        }
+                    });
+                }
+
+                dnsServer.QueryReceived += OnDnsServerOnQueryReceived;
+                dnsServer.Start();
+                Console.WriteLine(@"-------ARASHI   DNS------");
+                Console.WriteLine(@"-------DOTNET ALPHA------");
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(@"ArashiDNS Server Running");
+
+                Console.WriteLine(@"Press any key to stop dns server");
+                Console.WriteLine("------------------------");
+                Console.ReadLine();
+                Console.WriteLine("------------------------");
+                ws.CloseAsync(WebSocketCloseStatus.Empty, String.Empty, CancellationToken.None).Wait();
+            }
         }
     }
 }
