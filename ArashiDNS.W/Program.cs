@@ -4,7 +4,7 @@ using System.Net;
 using ARSoft.Tools.Net.Dns;
 using Fleck;
 
-namespace ArashiW
+namespace ArashiDNS.W
 {
     class Program
     {

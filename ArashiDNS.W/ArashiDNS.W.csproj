@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{97CB84A2-7910-432F-A3D2-960C0EBAF424}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ArashiW</RootNamespace>
-    <AssemblyName>ArashiW</AssemblyName>
+    <RootNamespace>ArashiDNS.W</RootNamespace>
+    <AssemblyName>ArashiDNS.W</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ARSoft.Tools.Net.Dns;
 
-namespace ArashiCW
+namespace ArashiDNS
 {
     class Program
     {
