@@ -66,7 +66,7 @@ namespace ArashiDNS
                                             dnsRMsg.AuthorityRecords.ForEach(Console.WriteLine);
                                         };
                                         bgw.RunWorkerAsync();
-                                    };
+                                    }
                                 };
                                 item.Key.RunWorkerAsync();
 
