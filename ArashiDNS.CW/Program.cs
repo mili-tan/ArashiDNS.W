@@ -35,14 +35,11 @@ namespace ArashiDNS
                                 ws.ConnectAsync(new Uri("ws://127.0.0.1:3030"), CancellationToken.None)
                                     .Wait();
 
+                            var dnsBytes = new byte[512];
                             lock (ws)
                             {
                                 ws.SendAsync(new ArraySegment<byte>(DNSEncoder.Encode(query)),
                                     WebSocketMessageType.Binary, true, CancellationToken.None).Wait();
-                            }
-                            var dnsBytes = new byte[500];
-                            lock (ws)
-                            {
                                 ws.ReceiveAsync(new ArraySegment<byte>(dnsBytes), CancellationToken.None).Wait();
                             }
                             var dnsRMsg = DnsMessage.Parse(dnsBytes);
