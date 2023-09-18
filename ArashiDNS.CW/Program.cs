@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using ARSoft.Tools.Net.Dns;
+using Force.DeepCloner;
 
 namespace ArashiDNS
 {
@@ -12,27 +14,33 @@ namespace ArashiDNS
     {
         static void Main(string[] args)
         {
-            using var dnsServer = new DnsServer(IPAddress.Any, 10, 10);
+            using var dnsServer = new DnsServer(new IPEndPoint(IPAddress.Any,15353), 10, 10);
             DNSEncoder.Init();
 
-            var wsPool = new ObjectPool<ClientWebSocket>(() =>
-            {
-                var ws = new ClientWebSocket();
-                ws.ConnectAsync(new Uri("ws://127.0.0.1:22332"), CancellationToken.None).Wait();
-                return ws;
-            });
+            //var wsPool = new ObjectPool<ClientWebSocket>(() =>
+            //{
+            //    var ws = new ClientWebSocket();
+            //    ws.ConnectAsync(new Uri("ws://127.0.0.1:22332"), CancellationToken.None).Wait();
+            //    return ws;
+            //});
+            //for (var i = 0; i < 3; i++)
+            //{
+            //    wsPool.Return(wsPool.Get());
+            //}
 
-            for (var i = 0; i < 3; i++)
-            {
-                wsPool.Return(wsPool.Get());
-            }
+            var webSocket = new ClientWebSocket();
+            webSocket.ConnectAsync(new Uri("ws://127.0.0.1:22332"), CancellationToken.None).Wait();
 
             async Task OnDnsServerOnQueryReceived(object sender, QueryReceivedEventArgs e)
             {
                 try
                 {
                     if (e.Query is not DnsMessage query) return;
-                    var ws = wsPool.Get();
+                    //var ws = wsPool.Get();
+
+                    var ws = new ClientWebSocket();
+                    ws.ConnectAsync(new Uri("ws://127.0.0.1:22332"), CancellationToken.None).Wait();
+
                     switch (ws.State)
                     {
                         case WebSocketState.Aborted:
@@ -53,7 +61,7 @@ namespace ArashiDNS
                     await ws.SendAsync(new ArraySegment<byte>(DNSEncoder.Encode(query)),
                         WebSocketMessageType.Binary, true, CancellationToken.None);
                     await ws.ReceiveAsync(new ArraySegment<byte>(dnsBytes), CancellationToken.None);
-                    wsPool.Return(ws);
+                    //wsPool.Return(ws);
 
                     var dnsRMsg = DnsMessage.Parse(dnsBytes);
                     Task.Run(() =>
@@ -62,6 +70,7 @@ namespace ArashiDNS
                         dnsRMsg.AuthorityRecords.ForEach(Console.WriteLine);
                     });
                     e.Response = dnsRMsg;
+                    ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None).Wait();
                 }
                 catch (Exception exception)
                 {

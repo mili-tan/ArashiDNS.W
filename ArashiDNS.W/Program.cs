@@ -24,7 +24,7 @@ namespace ArashiDNS.W
                     dnsQMsg.Questions.ForEach(o => Console.WriteLine("Qu:" + o));
 
                     var dnsRMsg =
-                        new DnsClient(IPAddress.Parse("119.29.29.29"), 100).SendMessage(dnsQMsg);
+                        new DnsClient(IPAddress.Parse("127.0.0.1"), 100).SendMessage(dnsQMsg);
                     ws.Send(DNSEncoder.Encode(dnsRMsg));
 
                     Console.ForegroundColor = ConsoleColor.Green;
